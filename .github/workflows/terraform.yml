@@ -44,6 +44,15 @@ jobs:
           role-session-name: Github_to_AWS_via_FederatedOIDC
           aws-region: ${{ inputs.aws-region }}
 
+
+      # Destroy Configuration
+      - name: Read destroy Configuration
+        id: read-destroy-config
+        run: |
+          DESTROY="$(jq -r '.${{ inputs.environment }}' ./infra/destroy_config.json  )"
+          echo "destroy=$(echo $DESTROY)" >> $GITHUB_OUTPUT
+
+
       # 3. Instala o Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -71,8 +80,16 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+
+      - name: Terraform Destroy
+        if: steps.read-destroy-config.outputs.destroy == 'true'
+        id: terraform-destroy
+        run: cd infra &&
+         terraform destroy -var-file="envs/${{ inputs.environment }}/terraform.tfvars" -auto-approve
+
       # 5. Gera o plano de execução do Terraform
       - name: Terraform Plan
+        if: steps.read-destroy-config.outputs.destroy != 'true'
         id: terraform-plan
         working-directory: ./infra
         run: |
@@ -90,6 +107,7 @@ jobs:
 
       # 6. Aplica as mudanças do Terraform (apenas em push para a 'main')
       - name: Terraform Apply
+        if: ${{ steps.read-destroy-config.outputs.destroy != 'true' }}
         id: terraform-apply
         working-directory: ./infra
         run: |
