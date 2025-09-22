@@ -5,6 +5,10 @@ on:
     branches:
       - develop
 
+permissions:
+  id-token: write # Necessário para autenticação OIDC na AWS
+  contents: read  # Necessário para a ação de checkout
+
 jobs:
   terraform:
     uses: ./.github/workflows/terraform.yml
@@ -14,4 +18,3 @@ jobs:
       aws-region: "us-east-1"
       aws-statefile-s3-bucket: "kelberstuchi-us-east-1-teraform-pipeline"
       aws-lock-dynamodb-table: "kelberstuchi-us-east-1-terraform-lock"
-      
