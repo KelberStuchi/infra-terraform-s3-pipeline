@@ -82,14 +82,14 @@ jobs:
 
 
       - name: Terraform Destroy
-        if: ${{ steps.read-destroy-config.outputs.destroy == 'true' }}
+        if: steps.read-destroy-config.outputs.destroy == 'true'
         id: terraform-destroy
         run: cd infra &&
          terraform destroy -var-file="envs/${{ inputs.environment }}/terraform.tfvars" -auto-approve
 
       # 5. Gera o plano de execução do Terraform
       - name: Terraform Plan
-        if: ${{ steps.read-destroy-config.outputs.destroy != 'true' }}
+        if: steps.read-destroy-config.outputs.destroy != 'true'
         id: terraform-plan
         working-directory: ./infra
         run: |
